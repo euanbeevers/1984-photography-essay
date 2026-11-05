@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Big Brother Is Watching</title>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            position: relative;
+            background: #000;
+            color: #eee;
+            margin: 0;
+            min-height: 100vh;
+            overflow-x: hidden;
+            font-family: Georgia, "Times New Roman", serif;
+        }
+
+        /* Add a little extra page length while the portfolio is open,
+           so the bottom arrow can be reached by scrolling. */
+        body.portfolio-active {
+            min-height: calc(100vh + 64px);
+        }
+
+        /* Opening screen */
+
+        .hero-section {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            min-height: 520px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            background: #000;
+        }
+
+        .portrait {
+            position: relative;
+            height: 95vh;
+            max-height: 100%;
+        }
+
+        .portrait img {
+            height: 100%;
+            width: auto;
+            max-width: 100vw;
+            display: block;
+        }
+
+        /* Eye masks */
+
+        .eye-mask {
+            position: absolute;
+            width: 12%;
+            height: 9%;
+            overflow: hidden;
+            border-radius: 50%;
+        }
+
+        .left-eye {
+            left: 32.5%;
+            top: 34.3%;
+        }
+
+        .right-eye {
+            left: 55.5%;
+            top: 34.3%;
+        }
+
+        /* Pupils */
+
+        .pupil {
+            position: absolute;
+            width: 27%;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 30%, #332a20, #080706 65%);
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        /* Portfolio drawer: the arrow and photo section move together */
+
+        .portfolio-drop {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 30;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh + 64px);
+            transform: translateY(calc(-100% + 64px));
+            will-change: transform;
+        }
+
+        .portfolio-drop.dropping {
+            animation: portfolioDrop 2.7s forwards;
+        }
+
+        .portfolio-drop.open {
+            transform: translateY(0);
+        }
+
+        .portfolio-drop.closing {
+            animation: portfolioClose 1.15s cubic-bezier(0.55, 0.05, 0.75, 0.35) forwards;
+        }
+
+        /* A falling object with a strong first rebound and smaller settling bounces */
+        @keyframes portfolioDrop {
+            0% {
+                transform: translateY(calc(-100% + 64px));
+                animation-timing-function: cubic-bezier(0.22, 0.72, 0.35, 1);
+            }
+            58% {
+                transform: translateY(0);
+                animation-timing-function: cubic-bezier(0.25, 0.1, 0.55, 1);
+            }
+            72% {
+                transform: translateY(-78px);
+                animation-timing-function: cubic-bezier(0.45, 0, 0.75, 0.25);
+            }
+            84% {
+                transform: translateY(0);
+                animation-timing-function: cubic-bezier(0.25, 0.1, 0.55, 1);
+            }
+            92% {
+                transform: translateY(-30px);
+                animation-timing-function: cubic-bezier(0.45, 0, 0.75, 0.25);
+            }
+            97% {
+                transform: translateY(0);
+                animation-timing-function: cubic-bezier(0.25, 0.1, 0.55, 1);
+            }
+            99% { transform: translateY(-8px); }
+            100% { transform: translateY(0); }
+        }
+
+        @keyframes portfolioClose {
+            from { transform: translateY(0); }
+            to { transform: translateY(calc(-100% + 64px)); }
+        }
+
+        .portfolio-arrow {
+            position: relative;
+            flex: 0 0 64px;
+            align-self: center;
+            width: 72px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #850000;
+            border-top: none;
+            border-radius: 0 0 7px 7px;
+            background: rgba(12, 12, 12, 0.96);
+            color: #d01818;
+            font-size: 34px;
+            line-height: 1;
+            cursor: pointer;
+            box-shadow: 0 0 18px rgba(150, 0, 0, 0.22);
+            transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .portfolio-arrow:hover {
+            background: #310000;
+            color: #ff3030;
+            box-shadow: 0 0 24px rgba(190, 0, 0, 0.45);
+        }
+
+        .portfolio-arrow:disabled { cursor: default; }
+
+        /* Big Brother's sliding thought panel */
+
+        .thought-panel {
+            position: fixed;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%) translateX(calc(-100% + 28px));
+            display: flex;
+            align-items: center;
+            transition: transform 0.4s ease;
+            z-index: 1000;
+        }
+
+        .thought-panel.open {
+            transform: translateY(-50%) translateX(0);
+        }
+
+        .thought-content {
+            width: 230px;
+            padding: 20px;
+            background: #111;
+            color: white;
+            text-align: center;
+            border: 1px solid #750000;
+            border-right: none;
+            box-shadow: 3px 0 12px rgba(0, 0, 0, 0.6);
+        }
+
+        .thought-tab {
+            width: 28px;
+            height: 64px;
+            flex-shrink: 0;
+            background: #1b1b1b;
+            color: #cc2222;
+            border: 1px solid #750000;
+            border-left: none;
+            border-radius: 0 6px 6px 0;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+
+        .thought-tab:hover {
+            background: #350000;
+            color: #ff3333;
+        }
+
+        .thought-content input {
+            width: 75px;
+            padding: 8px;
+            margin-top: 12px;
+            background: #222;
+            border: 1px solid #666;
+            color: white;
+            font-size: 20px;
+            text-align: center;
+        }
+
+        .thought-question { transition: color 1s ease; }
+        .thought-question.wrong { color: #ff3333; }
+        .thought-question.correct { color: #33cc55; }
+
+        /* Photo essay section, attached to the falling arrow */
+
+        .portfolio-section {
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto;
+            padding: 70px clamp(22px, 7vw, 110px) 80px;
+            background: #090909;
+            border-top: 1px solid #650000;
+            scrollbar-color: #750000 #111;
+        }
+
+        .portfolio-heading {
+            max-width: 900px;
+            margin: 0 auto 45px;
+            text-align: center;
+        }
+
+        .portfolio-kicker {
+            color: #b51b1b;
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+        }
+
+        .portfolio-heading h1 {
+            margin: 16px 0;
+            color: #e8e0e0;
+            font-size: clamp(34px, 6vw, 64px);
+            font-weight: normal;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .portfolio-heading p {
+            max-width: 620px;
+            margin: 0 auto;
+            color: #aaa;
+            font-family: Arial, sans-serif;
+            font-size: 15px;
+            line-height: 1.7;
+        }
+
+        .photo-grid {
+            width: min(1200px, 100%);
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 34px;
+        }
+
+        .photo-card {
+            min-width: 0;
+            padding: 14px;
+            background: #111;
+            border: 1px solid #3d1717;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.35);
+        }
+
+        .photo-card img {
+            display: block;
+            width: 100%;
+            height: auto;
+            aspect-ratio: 3 / 2;
+            object-fit: contain;
+            background: #050505;
+        }
+
+        .photo-card h2 {
+            margin: 20px 4px 9px;
+            color: #d5caca;
+            font-size: 19px;
+            font-weight: normal;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .photo-card p {
+            margin: 0 4px 8px;
+            color: #999;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.65;
+        }
+
+        .photo-number {
+            color: #a51b1b;
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            letter-spacing: 2px;
+        }
+
+        @media (max-width: 760px) {
+            .photo-grid { grid-template-columns: 1fr; }
+            .portfolio-section { padding: 55px 18px 60px; }
+            .thought-content { width: 210px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
+            *, *::before, *::after { transition-duration: 0.01ms !important; }
+            .portfolio-drop.dropping { animation-duration: 0.01ms; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Opening screen -->
+    <section class="hero-section" id="top">
+
+        <div class="portrait">
+            <img src="big_brother.png" alt="Big Brother watching">
+
+            <div class="eye-mask left-eye"><div class="pupil"></div></div>
+            <div class="eye-mask right-eye"><div class="pupil"></div></div>
+        </div>
+
+    </section>
+
+    <!-- Thought Police side panel -->
+    <div class="thought-panel" id="thoughtPanel">
+        <div class="thought-content">
+            <h2>2 + 2 = ___</h2>
+            <input type="number" id="answerInput" placeholder="?" aria-label="Your answer">
+            <p id="answerMessage" class="thought-question">
+                THERE IS ONLY ONE CORRECT ANSWER.
+            </p>
+        </div>
+
+        <button class="thought-tab" id="thoughtTab"
+                aria-label="Open thought panel" aria-expanded="false">
+            <span id="tabArrow" aria-hidden="true">▶</span>
+        </button>
+    </div>
+
+    <!-- The portfolio drawer and its arrow move as one piece -->
+    <div class="portfolio-drop" id="portfolioDrop">
+        <section class="portfolio-section" id="portfolio" aria-label="Photography portfolio">
+            <header class="portfolio-heading">
+                <div class="portfolio-kicker">Ministry of Truth // Photographic Records</div>
+                <h1>The Evidence</h1>
+                <p>A photographic response to George Orwell's <em>Nineteen Eighty-Four</em>, exploring surveillance, censorship and rebellion.</p>
+            </header>
+
+            <div class="photo-grid">
+                <article class="photo-card">
+                    <img src="diary-photo.webp" alt="A warmly lit diary page repeatedly bearing the words Down with Big Brother" loading="lazy">
+                    <div class="photo-number">RECORD 001</div>
+                    <h2>The Diary</h2>
+                    <p>A private act of rebellion, repeated until the page becomes a record of defiance.</p>
+                </article>
+
+                <article class="photo-card">
+                    <img src="newspaper-photo.webp" alt="A black and white newspaper photograph obscured by thick black censorship marks" loading="lazy">
+                    <div class="photo-number">RECORD 002</div>
+                    <h2>The Altered Record</h2>
+                    <p>A newspaper transformed by censorship, leaving only fragments of information visible.</p>
+                </article>
+            </div>
+        </section>
+
+        <button class="portfolio-arrow" id="portfolioArrow"
+                aria-label="Pull down the photography portfolio" aria-controls="portfolio">
+            <span aria-hidden="true">▼</span>
+        </button>
+    </div>
+
+    <script>
+        // Make Big Brother follow the mouse
+        const eyes = document.querySelectorAll(".eye-mask");
+
+        document.addEventListener("mousemove", (event) => {
+            eyes.forEach(eye => {
+                const pupil = eye.querySelector(".pupil");
+                const bounds = eye.getBoundingClientRect();
+                const centerX = bounds.left + bounds.width / 2;
+                const centerY = bounds.top + bounds.height / 2;
+                const dx = event.clientX - centerX;
+                const dy = event.clientY - centerY;
+                const maxX = (eye.clientWidth - pupil.offsetWidth) / 2;
+                const maxY = (eye.clientHeight - pupil.offsetHeight) / 2;
+                const distance = Math.sqrt((dx / maxX) ** 2 + (dy / maxY) ** 2);
+                const scale = distance > 1 ? 1 / distance : 1;
+                const movementLimit = 0.65;
+                const moveX = dx * scale * movementLimit;
+                const moveY = dy * scale * movementLimit;
+                pupil.style.left = `calc(50% + ${moveX}px)`;
+                pupil.style.top = `calc(50% + ${moveY}px)`;
+            });
+        });
+
+        // Thought panel controls
+        const thoughtPanel = document.getElementById("thoughtPanel");
+        const thoughtTab = document.getElementById("thoughtTab");
+        const tabArrow = document.getElementById("tabArrow");
+        const answerInput = document.getElementById("answerInput");
+        const answerMessage = document.getElementById("answerMessage");
+
+        thoughtTab.addEventListener("click", () => {
+            thoughtPanel.classList.toggle("open");
+            const isOpen = thoughtPanel.classList.contains("open");
+            tabArrow.textContent = isOpen ? "◀" : "▶";
+            thoughtTab.setAttribute("aria-label", isOpen ? "Close thought panel" : "Open thought panel");
+            thoughtTab.setAttribute("aria-expanded", isOpen);
+        });
+
+        answerInput.addEventListener("input", () => {
+            const answer = answerInput.value.trim();
+            answerMessage.classList.remove("wrong", "correct");
+
+            if (answer === "") {
+                answerMessage.textContent = "THERE IS ONLY ONE CORRECT ANSWER.";
+                return;
+            }
+
+            if (answer === "5") {
+                answerMessage.textContent = "CORRECT.";
+                answerMessage.classList.add("correct");
+            } else {
+                answerMessage.textContent = "INCORRECT. TRY AGAIN.";
+                answerMessage.classList.add("wrong");
+            }
+
+            setTimeout(() => answerMessage.classList.remove("wrong", "correct"), 1500);
+        });
+
+        // Pull the portfolio down, then let the arrow send it back up.
+        const portfolioArrow = document.getElementById("portfolioArrow");
+        const portfolioDrop = document.getElementById("portfolioDrop");
+        const portfolioArrowIcon = portfolioArrow.querySelector("span");
+        const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+        let portfolioMoving = false;
+
+        function setPortfolioArrow(isOpen) {
+            portfolioArrowIcon.textContent = isOpen ? "▲" : "▼";
+            portfolioArrow.setAttribute(
+                "aria-label",
+                isOpen ? "Hide the photography portfolio" : "Pull down the photography portfolio"
+            );
+            portfolioArrow.setAttribute("aria-expanded", String(isOpen));
+        }
+
+        portfolioArrow.addEventListener("click", () => {
+            if (portfolioMoving) return;
+
+            const isOpen = portfolioDrop.classList.contains("open");
+            portfolioMoving = true;
+            portfolioArrow.disabled = true;
+
+            if (!isOpen) {
+                document.body.classList.add("portfolio-active");
+                setPortfolioArrow(true);
+
+                if (reduceMotion.matches) {
+                    portfolioDrop.classList.add("open");
+                    portfolioMoving = false;
+                    portfolioArrow.disabled = false;
+                } else {
+                    portfolioDrop.classList.remove("closing");
+                    portfolioDrop.classList.add("dropping");
+                }
+            } else {
+                setPortfolioArrow(false);
+                portfolioDrop.classList.remove("open");
+
+                if (reduceMotion.matches) {
+                    document.body.classList.remove("portfolio-active");
+                    window.scrollTo(0, 0);
+                    portfolioMoving = false;
+                    portfolioArrow.disabled = false;
+                } else {
+                    // Return the page to the top as the drawer retracts.
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                    portfolioDrop.classList.add("closing");
+                }
+            }
+        });
+
+        portfolioDrop.addEventListener("animationend", (event) => {
+            if (event.animationName === "portfolioDrop") {
+                portfolioDrop.classList.remove("dropping");
+                portfolioDrop.classList.add("open");
+            } else if (event.animationName === "portfolioClose") {
+                portfolioDrop.classList.remove("closing");
+                document.body.classList.remove("portfolio-active");
+            } else {
+                return;
+            }
+
+            portfolioMoving = false;
+            portfolioArrow.disabled = false;
+        });
+
+    </script>
+
+</body>
+</html>
